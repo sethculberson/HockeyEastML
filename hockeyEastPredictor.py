@@ -4,26 +4,34 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import time
 
-url = "https://www.hockeyeastonline.com/men/statistics/2324/conference-team.php"
 
-response = requests.get(url)
+years = ['2122','2223','2324']
+for year in years:
+    url = f"https://www.hockeyeastonline.com/men/statistics/{year}/conference-team.php"
 
-soup = BeautifulSoup(response.content, 'html.parser')
+    response = requests.get(url)
 
-data = []
+    soup = BeautifulSoup(response.content, 'html.parser')
 
-table = soup.find('table')
-table_rows = table.find_all('tr')
+    data = []
 
-for row in table_rows:
-    row_data = []
-    for cell in row.find_all('td'):
-        row_data.append(cell.text)
-    data.append(row_data)
+    table = soup.find('table')
+    table_headers = table.find_all('th')
+    table_rows = table.find('tbody').findAll('tr')
 
-df = pd.DataFrame(data)
+    header_data = []
+    for header in table_headers:
+        header_data.append(header.text)
+    data.append(header_data)
 
-time.sleep(1)
 
-print(df)
-#df.to_csv('Hockey-East-Standings.csv',index=False)
+    for row in table_rows:
+        row_data = []
+        for cell in row.find_all('td'):
+            row_data.append(cell.text)
+        data.append(row_data)
+
+    df = pd.DataFrame(data)
+
+    path = 'data/standings'
+    df.to_csv(f"{path}/Hockey-East-Standings-{year}.csv",index=False)
